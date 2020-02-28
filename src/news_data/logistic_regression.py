@@ -1,0 +1,1 @@
+# logistic regression model for news group dataset
