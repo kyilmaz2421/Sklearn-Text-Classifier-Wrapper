@@ -17,7 +17,7 @@ Mini project 2 for COMP 551 Applied Machine Learning at McGill University
         | imdb_analytics.py
         | news_analytics.py
   
- - code models using sklearn: logistic regression, decision trees, SVM, adaboost, random forest, tentative perceptron
+ - code models using sklearn: logistic regression (NEWTON - For Colin), decision trees, SVM, adaboost, random forest, tentative perceptron
  - model analysis 
  - pipeline: feature selection, preprocessing (getting distributions, etc.), hyperparameter tuning, evaluation (graphs, etc.)
  - develop k cross fold pipeline that can easily test hyperparameters and model parameters for each model 
