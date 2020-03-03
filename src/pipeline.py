@@ -5,7 +5,6 @@ import numpy as np
 
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.svm import SVC
-from sklearn.linear_model import LogisticRegression
 from sklearn import tree
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import AdaBoostClassifier
