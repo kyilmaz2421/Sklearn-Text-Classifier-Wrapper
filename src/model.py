@@ -188,6 +188,7 @@ class Classifier:
                     label="Cross-validation score")
 
         plt.legend(loc="best")
+        plt.show()
                 
 if __name__ == "__main__":
     from sklearn.ensemble import AdaBoostClassifier
