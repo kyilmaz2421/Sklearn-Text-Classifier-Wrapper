@@ -6,7 +6,7 @@ training the follwoing models on two text data sets:
     "from sklearn.ensemble import AdaBoostClassifier",
     "from sklearn.ensemble import RandomForestClassifier",
     "from sklearn.svm import LinearSVC",
-    "from sklearn.linear_model import LogisticRegression",
+    "from sklearn.linear_model import LogisticRegression"
     
 ## TO DO 
 - clean & structure data
