@@ -53,6 +53,7 @@ class Classifier:
         if data_set == 1: 
             from sklearn.datasets import fetch_20newsgroups
             train = fetch_20newsgroups(subset='train')
+            print(type(train))
            
             test = fetch_20newsgroups(subset='test')
             
@@ -66,8 +67,8 @@ class Classifier:
             self.Y_test = test.target
 
         else:
-            train = pd.read_csv("../data/imbd/train.txt",header=None)
-            test = pd.read_csv("../data/imbd/test.txt",header=None)
+            train = pd.read_csv("../data/imbd/train.txt",header=None).astype(str).sample(frac=1).reset_index(drop=True)
+            test = pd.read_csv("../data/imbd/test.txt",header=None).astype(str).sample(frac=1).reset_index(drop=True)
 
             ###### ANY EXTRA PRE_PROCESSING FOR IMBD HERE ######
 
@@ -189,7 +190,8 @@ class Classifier:
         plt.legend(loc="best")
                 
 if __name__ == "__main__":
-    c = Classifier(1,LogisticRegression())
+    from sklearn.ensemble import AdaBoostClassifier
+    c = Classifier(0,AdaBoostClassifier())
     c.baseline_fit()
 
     c.learning_curve([0.33,0.66,1.0])
