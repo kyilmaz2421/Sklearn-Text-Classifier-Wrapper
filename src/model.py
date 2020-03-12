@@ -93,9 +93,9 @@ class Classifier:
         print('Recall Score : ' + str(recall_score(self.Y_test,res, average='micro')))
         print('F1 Score : ' + str(f1_score(self.Y_test,res, average='micro')))
         #confusion matrix
-        self.plot_cm(cnf_matrix,title_options,include_values)
+        self.plot_cm(title_options,include_values)
 
-    def plot_cm(self,cm,title_options, include_values):
+    def plot_cm(self,title_options, include_values):
         #produces multiple cnf matricies
         #title_options is a list of tuples with the parametes so we can see multiple matricies
         for title, normalize in titles_options:
