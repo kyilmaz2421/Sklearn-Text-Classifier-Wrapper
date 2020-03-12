@@ -1,6 +1,6 @@
 from sklearn.feature_extraction.text import CountVectorizer,TfidfTransformer
 from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.metrics import accuracy_score,recall_score,precision_score,f1_score,confusion_matrix
+from sklearn.metrics import accuracy_score,recall_score,precision_score,f1_score,confusion_matrix,plot_confusion_matrix
 from sklearn.model_selection import GridSearchCV,learning_curve
 import pandas as pd
 import numpy as np
@@ -24,6 +24,7 @@ class Classifier:
             self.X_test = test.data
             self.Y_train = train.target
             self.Y_test = test.target
+            self.class_names = test.target_names
 
         else:
             
@@ -39,6 +40,7 @@ class Classifier:
             self.X_test = test[0].to_numpy()
             self.Y_train = train[1].to_numpy()
             self.Y_test = test[1].to_numpy()
+            self.class_names = ["negative","positive"]
 
         self.model = model
         self.clf = None #will be updated by best result in grid_search
@@ -81,37 +83,30 @@ class Classifier:
     
         self.clf = grid_search
    
-    def eval_on_test(self):
+    def eval_on_test(self, title_options= [("Confusion Matrix",None)] ,include_values=False):
         print()
         print("Evaluation on test set:")
         print()
         res = self.clf.predict(self.X_test)
-        #cnf_matrix = confusion_matrix(y_test,y_pred)
         print('Accuracy Score : ' + str(accuracy_score(self.Y_test,res)))
         print('Precision Score : ' + str(precision_score(self.Y_test,res, average='micro')))
         print('Recall Score : ' + str(recall_score(self.Y_test,res, average='micro')))
         print('F1 Score : ' + str(f1_score(self.Y_test,res, average='micro')))
         #confusion matrix
-        print('Confusion Matrix : \n' + str(confusion_matrix(self.Y_test,res)))
-        
-        """
-        import itertools
-        # Compute confusion matrix
-        cnf_matrix = confusion_matrix(y_test, y_pred)
-        np.set_printoptions(precision=2)
+        self.plot_cm(cnf_matrix,title_options,include_values)
 
-        # Plot non-normalized confusion matrix
-        plt.figure()
-        plot_confusion_matrix(cnf_matrix, classes=class_names,
-                            title='Confusion matrix, without normalization')
-
-        # Plot normalized confusion matrix
-        plt.figure()
-        plot_confusion_matrix(cnf_matrix, classes=class_names, normalize=True,
-                            title='Normalized confusion matrix')
+    def plot_cm(self,cm,title_options, include_values):
+        #produces multiple cnf matricies
+        #title_options is a list of tuples with the parametes so we can see multiple matricies
+        for title, normalize in titles_options:
+            disp = plot_confusion_matrix(estimator=self.clf, X=self.X_test, y_true=self.Y_test,normalize=normalize,
+                                         display_labels=self.class_names, cmap=plt.cm.Blues, include_values=False)
+            disp.ax_.set_title(title)
+            plt.xticks(rotation=90)
+            print(title)
+            print(disp.confusion_matrix)
 
         plt.show()
-        """
 
     def learning_curve(self,train_sizes):
         #[0.33,0.66,1.0]
@@ -151,46 +146,5 @@ class Classifier:
 
                 
 
-
-def plot_confusion_matrix(cm, classes,
-
-                          normalize=False,
-                          title='Confusion matrix',
-                          cmap=plt.cm.Blues):
-    """
-    Code copied off the sklearn plot confusion matrix page
-    https://scikit-learn.org/0.18/auto_examples/model_selection/plot_confusion_matrix.html
-    """
-    """
-    This function prints and plots the confusion matrix.
-    Normalization can be applied by setting `normalize=True`.
-    """
-    plt.imshow(cm, interpolation='nearest', cmap=cmap)
-    plt.title(title)
-    plt.colorbar()
-    tick_marks = np.arange(len(classes))
-    plt.xticks(tick_marks, classes, rotation=45)
-    plt.yticks(tick_marks, classes)
-
-    if normalize:
-        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-        print("Normalized confusion matrix")
-    else:
-        print('Confusion matrix, without normalization')
-
-    print(cm)
-
-    thresh = cm.max() / 2.
-    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-        plt.text(j, i, cm[i, j],
-                 horizontalalignment="center",
-                 color="white" if cm[i, j] > thresh else "black")
-
-    plt.tight_layout()
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
-
 if __name__ == "__main__":
-    from sklearn.ensemble import AdaBoostClassifier
-    c = Classifier(1,AdaBoostClassifier())
-    #.()
+    pass
