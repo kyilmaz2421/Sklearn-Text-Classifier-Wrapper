@@ -1,6 +1,6 @@
 from sklearn.feature_extraction.text import CountVectorizer,TfidfTransformer
 from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.metrics import accuracy_score,recall_score,precision_score,f1_score,confusion_matrix,plot_confusion_matrix
+from sklearn.metrics import accuracy_score,recall_score,precision_score,f1_score,plot_confusion_matrix
 from sklearn.model_selection import GridSearchCV,learning_curve
 import pandas as pd
 import numpy as np
@@ -45,10 +45,7 @@ class Classifier:
         self.model = model
         self.clf = None #will be updated by best result in grid_search
 
-    def fit(self,parameters = {
-            'vect__min_df': ([0]),
-            'tfidf__use_idf': ([False]),} #default paramters for gridsearch
-            ,cv=5):  #default k paramter for K cross validation
+    def fit(self, parameters, cv):  #default k paramter for K cross validation
 
         pipeline = Pipeline(steps = [
             ('vect', CountVectorizer()),
@@ -83,8 +80,8 @@ class Classifier:
     
         self.clf = grid_search
    
-    def eval_on_test(self, title_options= [("Confusion Matrix",None)] ,include_values=False):
-        print()
+    def eval_on_test(self, title_options,include_values):
+        print(title_options)
         print("Evaluation on test set:")
         print()
         res = self.clf.predict(self.X_test)
@@ -93,12 +90,13 @@ class Classifier:
         print('Recall Score : ' + str(recall_score(self.Y_test,res, average='micro')))
         print('F1 Score : ' + str(f1_score(self.Y_test,res, average='micro')))
         #confusion matrix
+        if title_options==[]: title_options = [("Confusion Matrix",None)]
         self.plot_cm(title_options,include_values)
 
     def plot_cm(self,title_options, include_values):
         #produces multiple cnf matricies
         #title_options is a list of tuples with the parametes so we can see multiple matricies
-        for title, normalize in titles_options:
+        for title, normalize in title_options:
             disp = plot_confusion_matrix(estimator=self.clf, X=self.X_test, y_true=self.Y_test,normalize=normalize,
                                          display_labels=self.class_names, cmap=plt.cm.Blues, include_values=False)
             disp.ax_.set_title(title)
