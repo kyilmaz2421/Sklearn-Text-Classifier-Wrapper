@@ -120,7 +120,6 @@ class Classifier:
         print(self.param_occurence)
     
     def eval_on_test(self, title_options,include_values):
-        print(title_options)
         print("Evaluation on test set:")
         print()
         res = self.clf.predict(self.X_test)
