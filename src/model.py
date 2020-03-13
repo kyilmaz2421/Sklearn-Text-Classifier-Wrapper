@@ -45,6 +45,8 @@ class Classifier:
 
         self.model = model
         self.clf = None #will be updated by best result in grid_search
+        self.score_dict = None
+        self.param_occurence = None
 
     def fit(self, parameters, cv):  #default k paramter for K cross validation
 
@@ -73,12 +75,16 @@ class Classifier:
         means = self.clf.cv_results_['mean_test_score']
         stds = self.clf.cv_results_['std_test_score']
         params = self.clf.cv_results_['params']
+        self.score_dict = {}
+        i=0
         for mean, std, param in zip(means, stds, params):
             if param.get('vect__stop_words'):
                 param['vect__stop_words'] = stop_words_title[len(param['vect__stop_words'])]
 
             print("mean: %0.3f std: (+/-%0.03f) for %r"
                 % (mean, std * 2, param))
+            i+=1
+            self.score_dict[(mean,i)]=param #the i exists to avoid collsions
             
         print("Best score:")
         print("%0.3f (+/-%0.03f)" % (self.clf.best_score_, std * 2))
@@ -88,6 +94,30 @@ class Classifier:
             best_parameters['vect__stop_words'] = stop_words_title[len(best_parameters['vect__stop_words'])]
         for param_name in sorted(parameters.keys()):
             print("\t%s: %r" % (param_name, best_parameters[param_name]))
+        
+    
+    
+    def eval_best_n_params(self,n):
+        if n>=1 or n<=0: n = 0.2
+        scores = sorted(self.score_dict.keys(),key=lambda tup: tup[0])
+        scores = scores[int(n*len(scores)):]
+        p = self.score_dict[scores[0]]
+        self.param_occurence = []#will be an array of dicts -> each index represnt a param (i.e alpha)
+        j=0
+        print("Finding most common params for the top "+str(len(scores)) +" values")
+        for k in p.keys(): 
+            # each k is a key to a the specific hyper-param and (i.e k:alpha)
+            # we then iterate through our top params dictionary to update occurence of certain param
+            self.param_occurence.append({})
+            for s in scores:
+                # for the given score s gives us the hyper param type giving us the selected value (i.e s -> alpha -> 0.001)
+                val = self.score_dict[s][k]
+                if self.param_occurence[j].get(val):
+                   self.param_occurence[j][val]+=1
+                else: self.param_occurence[j][val]=1
+            j+=1
+
+        print(self.param_occurence)
     
     def eval_on_test(self, title_options,include_values):
         print(title_options)
@@ -116,7 +146,8 @@ class Classifier:
         plt.show()
 
     def learning_curve(self,train_sizes):
-        #[0.33,0.66,1.0]
+        if train_sizes ==[]: train_sizes = [0.33,0.66,1.0]
+        
         plt.figure()
         plt.title("title")
         plt.xlabel("Training examples")
@@ -141,6 +172,8 @@ class Classifier:
 
         plt.legend(loc="best")
         plt.show()
+
+
     
     def dummy_fit(self): 
         from sklearn.dummy import DummyClassifier
