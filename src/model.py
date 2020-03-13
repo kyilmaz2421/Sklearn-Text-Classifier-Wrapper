@@ -28,8 +28,8 @@ class Classifier:
 
         else:
             
-            train = pd.read_csv("../data/imbd/train.txt",header=None).sample(frac=1).reset_index(drop=True)
-            test = pd.read_csv("../data/imbd/test.txt",header=None).sample(frac=1).reset_index(drop=True)
+            train = pd.read_csv("../data/train.txt",header=None).sample(frac=1).reset_index(drop=True)
+            test = pd.read_csv("../data/test.txt",header=None).sample(frac=1).reset_index(drop=True)
 
             train.iloc[:,-1] = train.iloc[:,-1].astype(str).apply(lambda x: "1" if (x in ["5","6","7","8","9","10"]) else "0")
             test.iloc[:,-1] = test.iloc[:,-1].astype(str).apply(lambda x: "1" if (x in [" 5"," 6"," 7"," 8"," 9"," 10"]) else "0")
@@ -142,7 +142,6 @@ class Classifier:
         print("Results in baseline 'random' classifier:")
         print(dummy_clf.score(self.X_test, self.Y_test))
 
-                
 
 if __name__ == "__main__":
     pass
