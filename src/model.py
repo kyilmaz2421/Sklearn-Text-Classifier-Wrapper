@@ -62,7 +62,9 @@ class Classifier:
         if parameters.get('vect__stop_words'):
             temp = parameters.get('vect__stop_words')
             for i in range(len(temp)):
-                stop_words_title[len(temp[i])] = i
+                if temp[i] == None:
+                    stop_words_title[temp[i]] = i
+                else: stop_words_title[len(temp[i])] = i
             
         print("Performing grid search...")
         print("pipeline:", [name for name, _ in pipeline.steps])
