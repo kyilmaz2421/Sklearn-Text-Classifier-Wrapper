@@ -13,6 +13,7 @@ from sklearn.pipeline import Pipeline
 class Classifier:
     def __init__(self,data_set,model):
         if data_set == 1: 
+            
             from sklearn.datasets import fetch_20newsgroups
             
             train = fetch_20newsgroups(subset='train', remove=('headers', 'footers', 'quotes'))
