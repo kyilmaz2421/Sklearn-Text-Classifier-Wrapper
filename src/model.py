@@ -54,31 +54,41 @@ class Classifier:
             ('clf', self.model),
         ])
 
-        grid_search = GridSearchCV(pipeline, parameters,cv=5, n_jobs=-1, verbose=5, refit = True, return_train_score = True)
-
+        self.clf = GridSearchCV(pipeline, parameters,cv=5, n_jobs=-1, verbose=5, refit = True, return_train_score = True)
+        
+        stop_words_title = {}
+        if parameters.get('vect__stop_words'):
+            temp = parameters.get('vect__stop_words')
+            for i in range(len(temp)):
+                stop_words_title[len(temp[i])] = i
+            
         print("Performing grid search...")
         print("pipeline:", [name for name, _ in pipeline.steps])
         t0 = time()
-        grid_search.fit(self.X_train, self.Y_train)
+        self.clf.fit(self.X_train, self.Y_train)
         print("done in %0.3fs" % (time() - t0))
         print()
         
         print("scores!")
-        means = grid_search.cv_results_['mean_test_score']
-        stds = grid_search.cv_results_['std_test_score']
-        for mean, std, params in zip(means, stds, grid_search.cv_results_['params']):
-            print("%0.3f (+/-%0.03f) for %r"
-                % (mean, std * 2, params))
+        means = self.clf.cv_results_['mean_test_score']
+        stds = self.clf.cv_results_['std_test_score']
+        params = self.clf.cv_results_['params']
+        for mean, std, param in zip(means, stds, params):
+            if param.get('vect__stop_words'):
+                param['vect__stop_words'] = stop_words_title[len(param['vect__stop_words'])]
+
+            print("mean: %0.3f std: (+/-%0.03f) for %r"
+                % (mean, std * 2, param))
             
         print("Best score:")
-        print("%0.3f (+/-%0.03f)" % (grid_search.best_score_, std * 2))
+        print("%0.3f (+/-%0.03f)" % (self.clf.best_score_, std * 2))
         print("with parameters set:")
-        best_parameters = grid_search.best_estimator_.get_params()
+        best_parameters = self.clf.best_estimator_.get_params()
+        if best_parameters.get('vect__stop_words'):
+            best_parameters['vect__stop_words'] = stop_words_title[len(best_parameters['vect__stop_words'])]
         for param_name in sorted(parameters.keys()):
             print("\t%s: %r" % (param_name, best_parameters[param_name]))
     
-        self.clf = grid_search
-   
     def eval_on_test(self, title_options,include_values):
         print(title_options)
         print("Evaluation on test set:")
