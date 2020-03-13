@@ -57,8 +57,6 @@ class Classifier:
 
         print("Performing grid search...")
         print("pipeline:", [name for name, _ in pipeline.steps])
-        print("parameters:")
-        pprint(parameters)
         t0 = time()
         grid_search.fit(self.X_train, self.Y_train)
         print("done in %0.3fs" % (time() - t0))
