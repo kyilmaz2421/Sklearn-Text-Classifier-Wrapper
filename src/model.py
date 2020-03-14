@@ -48,7 +48,7 @@ class Classifier:
         self.score_dict = None
         self.param_occurence = None
 
-    def fit(self, parameters, cv):  #default k paramter for K cross validation
+    def fit(self, parameters, cv=5):  #default k paramter for K cross validation
 
         pipeline = Pipeline(steps = [
             ('vect', CountVectorizer()),
@@ -56,7 +56,7 @@ class Classifier:
             ('clf', self.model),
         ])
 
-        self.clf = GridSearchCV(pipeline, parameters,cv=5, n_jobs=-1, verbose=5, refit = True, return_train_score = True)
+        self.clf = GridSearchCV(pipeline, parameters,cv=cv, n_jobs=-1, verbose=5, refit = True, return_train_score = True)
         
         stop_words_title = {}
         if parameters.get('vect__stop_words'):
@@ -89,7 +89,7 @@ class Classifier:
             self.score_dict[(mean,i)]=param #the i exists to avoid collsions
             
         print("Best score:")
-        print("%0.3f (+/-%0.03f)" % (self.clf.best_score_, std * 2))
+        print("%0.3f (+/-%0.03f)" % (self.clf.best_score_, std))
         print("with parameters set:")
         best_parameters = self.clf.best_estimator_.get_params()
         if best_parameters.get('vect__stop_words'):
@@ -187,5 +187,3 @@ class Classifier:
         print(dummy_clf.score(self.X_test, self.Y_test))
 
 
-if __name__ == "__main__":
-    pass
