@@ -120,7 +120,7 @@ class Classifier:
             j+=1
 
         print(self.param_occurence)
-    
+     
     def eval_on_test(self, title_options,include_values):
         print("Evaluation on test set:")
         print()
