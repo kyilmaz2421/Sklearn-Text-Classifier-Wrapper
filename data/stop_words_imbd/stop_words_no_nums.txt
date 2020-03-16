@@ -9,7 +9,7 @@
     could, de, describe, detail, do, done,
     down, due, during, each, eg, eight, either, eleven, else,
     elsewhere, enough, etc, even, ever, every, everyone,
-    everything, everywhere, except, few, fifteen,sixteen, fifty,seventeen fill,
+    everything, everywhere, except, few, fifteen,sixteen, fifty,seventeen, fill,
     find, fire, first, five, for, former, formerly, forty,
     found, four, from, front, full, further, get, give, go,
     had, has, have, he, hence, her, here, hereafter,
@@ -19,7 +19,7 @@
     latterly, least, less, ltd, made, many, may, me,
     meanwhile, might, mill, mine, more, moreover, most, mostly,
     move, much, must, my, myself, name, namely, neither, nevertheless, next, nine, nineteen,
-    thirty, fourty, seventy, eighty, ninety, thousand, million
+    thirty, fourty, seventy, eighty, ninety, thousand, million,
     now, nowhere, of, off, often, on,
     once, one, only, onto, or, other, others, otherwise, our,
     ours, ourselves, out, over, own, part, per, perhaps,
