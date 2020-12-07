@@ -47,7 +47,7 @@ This is a text classification library that is a wrapoer on the sklearn libraries
     }
     
     #### TEST 1 ####
-    clf.fit(params_trial_1,cv=2)
+    clf.fit(params_trial_1, cv=5)
     clf.eval_best_n_params(0.9) # gets top 10% parameters
     clf.plot_cm(include_values=True)
     clf.learning_curve([0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0])
