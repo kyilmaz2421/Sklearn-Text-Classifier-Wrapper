@@ -31,9 +31,9 @@ class Classifier:
                  model,
                  stem=False,
                  lematize=False,
+                 test_size=0.1,
                  csv_file=None,
-                 data=None,
-                 class_names=None):
+                 data=None):
         if csv_file != None and data == None:
             data = pd.read_csv(csv_file, header=None,
                                delimiter=",").sample(frac=1).sample(frac=1)
@@ -44,19 +44,17 @@ class Classifier:
             data[0] = lematize_data(data[0])
 
         self.X_train, self.X_test, self.Y_train, self.Y_test = train_test_split(
-            data[0].to_numpy(), data[1].to_numpy(), test_size=0.10, random_state=42)
+            data[0].to_numpy(), data[1].to_numpy(), test_size=test_size, random_state=42)
         self.model = model
         self.clf = None  # will be updated by best result in grid_search
         self.score_dict = None
         self.param_occurence = None
-        self.class_names = class_names if (class_names and len(class_names) == len(
-            self.Y_train[0])) else list(range(len(self.Y_train[0])))
 
     def get_nltk_stop_words(self):
         nltk.download('stopwords')
         return nltk.corpus.stopwords.words('english')
 
-    def fit(self, parameters, cv):  # default k paramter for K cross validation
+    def fit(self, parameters, cv=5):  # default 5 paramter for K cross validation
 
         pipeline = Pipeline(steps=[
             ('vect', CountVectorizer()),
@@ -168,20 +166,20 @@ class Classifier:
         return res, probabilities
 
         # runs on test set so only use at the end
-    def plot_cm(self, title_options, include_values, predict_set=None):
+    def plot_cm(self,
+                title_options=[("Confusion Matrix", None)],
+                include_values=False,
+                predict_set=None):
         x_test, y_test = self.generate_predict_set(predict_set)
 
-        if title_options == []:
-            title_options = [("Confusion Matrix", None)]
         # title_options is a list of tuples with the parametes so we can see multiple matricies
         for title, normalize in title_options:
             disp = plot_confusion_matrix(estimator=self.clf,
                                          X=x_test,
                                          y_true=y_test,
                                          normalize=normalize,
-                                         display_labels=self.class_names,
                                          cmap=plt.cm.Blues,
-                                         include_values=False)
+                                         include_values=include_values)
             disp.ax_.set_title(title)
             plt.xticks(rotation=90)
             print(title)
