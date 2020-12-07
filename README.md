@@ -56,7 +56,7 @@ This is a text classification library that is a wrapoer on the sklearn libraries
     clf.prediction(evaluate_prediction=True)
  
  
-# Improvements
+# Future Improvements
 
 - Allow for more flexibility in customizing the appearence of the plots for the confusion matrix and learning curve
 - Enable different data formats to be inputted into class (i.e input the Train and Test set separately)
