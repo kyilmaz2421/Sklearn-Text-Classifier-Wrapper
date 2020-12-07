@@ -157,7 +157,7 @@ class Classifier:
             print('F1 Score : ' + str(f1_score(y_test, res, average='micro')))
 
             # confusion matrix
-            self.plot_cm(title_options, include_values)
+            self.plot_cm(include_values=include_values)
 
         return res, probabilities
 
