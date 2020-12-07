@@ -143,7 +143,6 @@ class Classifier:
             return self.X_test, self.Y_test
 
     def prediction(self,
-                   title_options=[],
                    include_values=True,
                    predict_set=None,
                    evaluate_prediction=True):
@@ -158,9 +157,6 @@ class Classifier:
             print('F1 Score : ' + str(f1_score(y_test, res, average='micro')))
 
             # confusion matrix
-            if title_options == []:
-                title_options = [("Confusion Matrix", None)]
-
             self.plot_cm(title_options, include_values)
 
         return res, probabilities
