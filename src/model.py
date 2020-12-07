@@ -1,54 +1,55 @@
-from sklearn.feature_extraction.text import CountVectorizer,TfidfTransformer
-from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.metrics import accuracy_score,recall_score,precision_score,f1_score,plot_confusion_matrix
-from sklearn.model_selection import GridSearchCV,learning_curve
+from time import time
+import csv
+from pprint import pprint
+
 import pandas as pd
 import numpy as np
-from pprint import pprint
-from time import time
+import nltk
+
+from sklearn.feature_extraction.text import CountVectorizer,TfidfTransformer
+from sklearn.metrics import accuracy_score,recall_score,precision_score,f1_score,plot_confusion_matrix
+from sklearn.model_selection import GridSearchCV,learning_curve,train_test_split
 import matplotlib.pyplot as plt
 from sklearn.pipeline import Pipeline
 
 
+
+def lematize_data(data):
+    nltk.download('wordnet')
+    lemmatizer = nltk.stem.WordNetLemmatizer()
+    return data.apply(lambda sentence: " ".join([lemmatizer.lemmatize(word) for word in sentence.split(" ")]))
+
+def stem_data(data):
+    stemmer = nltk.stem.snowball.SnowballStemmer("english")
+    return data.apply(lambda sentence: " ".join([stemmer.stem(word) for word in sentence.split(" ")]))
+
 class Classifier:
-    def __init__(self,data_set,model):
-        if data_set == 1: 
-            
-            from sklearn.datasets import fetch_20newsgroups
-            
-            train = fetch_20newsgroups(subset='train', remove=('headers', 'footers', 'quotes'))
-            test = fetch_20newsgroups(subset='test', remove=('headers', 'footers', 'quotes'))
-            
-            ###### ANY EXTRA PRE_PROCESSING FOR NEWS GROUP HERE ######
-            
-            self.X_train = train.data
-            self.X_test = test.data
-            self.Y_train = train.target
-            self.Y_test = test.target
-            self.class_names = test.target_names
+    def __init__(self, model, stem = False, lematize = False, csv_file = None, data = None, class_names=None):
+        if csv_file != None and data == None: 
+            data = pd.read_csv(csv_file,header=None, delimiter=",").sample(frac=1).sample(frac=1)
 
-        else:
-            
-            train = pd.read_csv("../data/train.txt",header=None).sample(frac=1).reset_index(drop=True)
-            test = pd.read_csv("../data/test.txt",header=None).sample(frac=1).reset_index(drop=True)
 
-            train.iloc[:,-1] = train.iloc[:,-1].astype(str).apply(lambda x: "1" if (x in ["5","6","7","8","9","10"]) else "0")
-            test.iloc[:,-1] = test.iloc[:,-1].astype(str).apply(lambda x: "1" if (x in [" 5"," 6"," 7"," 8"," 9"," 10"]) else "0")
-            
-            ###### ANY EXTRA PRE_PROCESSING FOR IMBD HERE ######
+        if stem:
+            data[0] = stem_data(data[0])
+        if lematize:
+            data[0] = lematize_data(data[0])
 
-            self.X_train = train[0].to_numpy()
-            self.X_test = test[0].to_numpy()
-            self.Y_train = train[1].to_numpy()
-            self.Y_test = test[1].to_numpy()
-            self.class_names = ["negative","positive"]
-
+        self.X_train, self.X_test, self.Y_train, self.Y_test = train_test_split(
+                                                                data[0].to_numpy(),
+                                                                data[1].to_numpy(), 
+                                                                test_size=0.10, 
+                                                                random_state=42)
         self.model = model
-        self.clf = None #will be updated by best result in grid_search
+        self.clf = None # will be updated by best result in grid_search
         self.score_dict = None
         self.param_occurence = None
+        self.class_names = class_names if (class_names and len(class_names) == len(self.Y_train[0])) else list(range(len(self.Y_train[0])))
 
-    def fit(self, parameters, cv):  #default k paramter for K cross validation
+    def get_nltk_stop_words(self):
+        nltk.download('stopwords')
+        return nltk.corpus.stopwords.words('english')
+
+    def fit(self, parameters, cv):  # default k paramter for K cross validation
 
         pipeline = Pipeline(steps = [
             ('vect', CountVectorizer()),
@@ -56,7 +57,7 @@ class Classifier:
             ('clf', self.model),
         ])
 
-        self.clf = GridSearchCV(pipeline, parameters,cv=5, n_jobs=-1, verbose=5, refit = True, return_train_score = True)
+        self.clf = GridSearchCV(pipeline, parameters,cv=cv, n_jobs=-1, verbose=5, refit = True, return_train_score = True)
         
         stop_words_title = {}
         if parameters.get('vect__stop_words'):
@@ -86,7 +87,7 @@ class Classifier:
             print("mean: %0.3f std: (+/-%0.03f) for %r"
                 % (mean, std * 2, param))
             i+=1
-            self.score_dict[(mean,i)]=param #the i exists to avoid collsions
+            self.score_dict[(mean,i)]=param # the i exists to avoid collisions
             
         print("Best score:")
         print("%0.3f (+/-%0.03f)" % (self.clf.best_score_, std * 2))
@@ -96,15 +97,14 @@ class Classifier:
             best_parameters['vect__stop_words'] = stop_words_title[len(best_parameters['vect__stop_words'])]
         for param_name in sorted(parameters.keys()):
             print("\t%s: %r" % (param_name, best_parameters[param_name]))
-        
     
-    
-    def eval_best_n_params(self,n):
-        if n>=1 or n<=0: n = 0.2
+    def eval_best_n_params(self, n):
+        if n>=1 or n<=0: 
+            n = 0.2
         scores = sorted(self.score_dict.keys(),key=lambda tup: tup[0])
         scores = scores[int(n*len(scores)):]
         p = self.score_dict[scores[0]]
-        self.param_occurence = []#will be an array of dicts -> each index represnt a param (i.e alpha)
+        self.param_occurence = []# will be an array of dicts -> each index represnt a param (i.e alpha)
         j=0
         print("Finding most common params for the top "+str(len(scores)) +" values")
         for k in p.keys(): 
@@ -116,39 +116,59 @@ class Classifier:
                 val = self.score_dict[s][k]
                 if self.param_occurence[j].get(val):
                    self.param_occurence[j][val]+=1
-                else: self.param_occurence[j][val]=1
+                else: 
+                    self.param_occurence[j][val]=1
             j+=1
 
         print(self.param_occurence)
-     
-    def eval_on_test(self, title_options,include_values):
-        print("Evaluation on test set:")
-        print()
-        res = self.clf.predict(self.X_test)
-        print('Accuracy Score : ' + str(accuracy_score(self.Y_test,res)))
-        print('Precision Score : ' + str(precision_score(self.Y_test,res, average='micro')))
-        print('Recall Score : ' + str(recall_score(self.Y_test,res, average='micro')))
-        print('F1 Score : ' + str(f1_score(self.Y_test,res, average='micro')))
-        #confusion matrix
-        if title_options==[]: title_options = [("Confusion Matrix",None)]
-        self.plot_cm(title_options,include_values)
 
-    def plot_cm(self,title_options, include_values):
-        if title_options==[]: title_options = [("Confusion Matrix",None)]
-        #produces multiple cnf matricies
-        #title_options is a list of tuples with the parametes so we can see multiple matricies
+    def generate_predict_set(self, predict_set):
+        x_test, y_test = None, None
+        if predict_set:
+    	    return np.array(predict_set[0]),np.array(predict_set[1])
+        else:
+    	    return self.X_test, self.Y_test
+
+     
+    def prediction(self, title_options = [], include_values = True, predict_set = None, evaluate_prediction=True):
+        print("Evaluation on test set:\n")
+        x_test, y_test = self.generate_predict_set(predict_set)
+        res = self.clf.predict(x_test)
+        probabilities = self.clf.predict_proba(x_test)
+        if evaluate_prediction:
+            print('Accuracy Score : ' + str(accuracy_score(y_test,res)))
+            print('Precision Score : ' + str(precision_score(y_test,res, average='micro')))
+            print('Recall Score : ' + str(recall_score(y_test,res, average='micro')))
+            print('F1 Score : ' + str(f1_score(y_test,res, average='micro')))
+            
+
+            # confusion matrix
+            if title_options==[]: 
+                title_options = [("Confusion Matrix",None)]
+
+            self.plot_cm(title_options, include_values)
+
+        return res, probabilities
+
+        # runs on test set so only use at the end
+    def plot_cm(self,title_options, include_values, predict_set = None):
+        x_test, y_test = self.generate_predict_set(predict_set)
+
+        if title_options==[]: 
+            title_options = [("Confusion Matrix",None)]
+        # title_options is a list of tuples with the parametes so we can see multiple matricies
         for title, normalize in title_options:
-            disp = plot_confusion_matrix(estimator=self.clf, X=self.X_test, y_true=self.Y_test,normalize=normalize,
+            disp = plot_confusion_matrix(estimator=self.clf, X=x_test, y_true=y_test,normalize=normalize,
                                          display_labels=self.class_names, cmap=plt.cm.Blues, include_values=False)
             disp.ax_.set_title(title)
             plt.xticks(rotation=90)
             print(title)
-            print(disp.confusion_matrix)
 
         plt.show()
 
     def learning_curve(self,train_sizes):
-        if train_sizes ==[]: train_sizes = [0.33,0.66,1.0]
+        if train_sizes ==[]: 
+            train_sizes = [0.33,0.66,1.0]
         
         plt.figure()
         plt.title("title")
@@ -174,18 +194,3 @@ class Classifier:
 
         plt.legend(loc="best")
         plt.show()
-
-
-    
-    def dummy_fit(self): 
-        from sklearn.dummy import DummyClassifier
-        print("Using sklearn dummy classifier and predicting on test data to get a baseline worst case score")
-        dummy_clf = DummyClassifier()
-        print("Training dummy classifier...")
-        dummy_clf.fit(self.X_train,self.Y_train)
-        print("Results in baseline 'random' classifier:")
-        print(dummy_clf.score(self.X_test, self.Y_test))
-
-
-if __name__ == "__main__":
-    pass
