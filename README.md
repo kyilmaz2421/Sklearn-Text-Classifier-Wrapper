@@ -1,5 +1,4 @@
-# COMP551miniproject2
-Mini project 2 for COMP 551 Applied Machine Learning at McGill University
+# Sklearn-Text-Classifier-wrapper
 
 For this project we were tasked to fit different models from scikit learn to two text classification problems. The 20 news group data set is multi-class and the Imbd data set is binary.
 We are tasked to create a model validation pipeline and to evaluate the effects of tuning
